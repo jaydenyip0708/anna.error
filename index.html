@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 Not Found</title>
+    <title>透明的選擇</title>
     <style>
         /* 剛開始與 404 狀態，保持完全無設計的自然排列 */
         #loginStage, #fake404Stage {
@@ -24,11 +24,11 @@
             color: #888;
             margin-top: 5px;
             padding-left: 15px;
-            line-height: 1.6; /* 讓隔行更有空間感 */
+            line-height: 1.6;
         }
 
         /* ----------------------------------
-           1724 第三次成功後，才激活的精緻設計
+           點擊「繼續」後，才激活的精緻設計
         ------------------------------------- */
         .scenery-active body {
             margin: 0;
@@ -96,7 +96,10 @@
         <hr>
         <address>Apache/2.4.41 (Ubuntu) Server at localhost Port 80</address>
         
-        <button onclick="clickBack()" style="margin-top: 30px; display: block;">← 返回 / Back</button>
+        <div style="margin-top: 30px;">
+            <button onclick="clickBack()" style="display: inline-block; margin-right: 15px;">← 返回 / Back</button>
+            <button id="continueBtn" onclick="enterPoemWorld()" style="display: none;">繼續 / Continue →</button>
+        </div>
     </div>
 
     <div class="poem-container" id="poemContainer">
@@ -116,12 +119,11 @@
         
         let isIn404 = false;
 
-        // 控制提示小三角的切換與內容更新
+        // 控制提示小三角
         function toggleHint() {
             const hintText = document.getElementById('hintText');
             const hintArrow = document.getElementById('hintArrow');
             
-            // 如果 1724 已經輸入過至少一次，動態更新 Hint 為兩行
             if (count1724 >= 1) {
                 hintText.innerHTML = "4 digits<br>almost there";
             } else {
@@ -143,76 +145,85 @@
         });
 
         function handleLogin() {
-            if (isIn404) return; // 防呆
+            if (isIn404) return;
 
             const input = document.getElementById('passwordInput').value.trim();
             const errorMsg = document.getElementById('errorMsg');
             const loginStage = document.getElementById('loginStage');
             const fake404Stage = document.getElementById('fake404Stage');
             const hiddenErrorCode = document.getElementById('hiddenErrorCode');
-            const poemContainer = document.getElementById('poemContainer');
+            const continueBtn = document.getElementById('continueBtn');
 
-            // --- 密碼 0708 獨立運作 ---
+            // 預設先隱藏繼續按鈕
+            continueBtn.style.display = 'none';
+
+            // --- 密碼 0708 ---
             if (input === '0708') {
                 errorMsg.style.display = 'none';
                 isIn404 = true;
                 count0708++;
-                
                 hiddenErrorCode.innerText = 'error 1016';
                 loginStage.style.display = 'none';
                 fake404Stage.style.display = 'block';
             }
-            // --- 密碼 1016 獨立運作 ---
+            // --- 密碼 1016 ---
             else if (input === '1016') {
                 errorMsg.style.display = 'none';
                 isIn404 = true;
                 count1016++;
-                
                 hiddenErrorCode.innerText = 'error 0708';
                 loginStage.style.display = 'none';
                 fake404Stage.style.display = 'block';
             }
-            // --- 核心密碼 1724 獨立運作 ---
+            // --- 核心密碼 1724 ---
             else if (input === '1724') {
                 errorMsg.style.display = 'none';
                 count1724++; 
 
                 if (count1724 === 1 || count1724 === 2) {
+                    // 第一、二次：純粹的 404
                     isIn404 = true;
-                    hiddenErrorCode.innerText = ''; // 1724 觸發純淨的 404
+                    hiddenErrorCode.innerText = ''; 
                     loginStage.style.display = 'none';
                     fake404Stage.style.display = 'block';
                     
-                    // 偷偷關閉 Hint 展開狀態，引導使用者之後再次點開看驚喜提示
                     document.getElementById('hintText').style.display = 'none';
                     document.getElementById('hintArrow').innerText = '▶';
                 } 
-                else if (count1724 === 3) {
-                    loginStage.style.display = 'none';
-                    document.documentElement.classList.add('scenery-active');
-                    poemContainer.style.display = 'flex';
-                    
-                    setTimeout(() => {
-                        poemContainer.classList.add('show');
-                        const lines = document.querySelectorAll('.poem-line');
-                        lines.forEach((line, index) => {
-                            line.style.transitionDelay = `${index * 0.8}s`;
-                        });
-                    }, 50);
-                } 
                 else {
+                    // 第三次（及以上）：依然進入 404，但偷偷多出「繼續」按鈕！
+                    isIn404 = true;
+                    hiddenErrorCode.innerText = ''; 
                     loginStage.style.display = 'none';
-                    document.documentElement.classList.add('scenery-active');
-                    poemContainer.style.display = 'flex';
-                    poemContainer.classList.add('show');
+                    fake404Stage.style.display = 'block';
+                    continueBtn.style.display = 'inline-block'; // 顯示繼續
+                    
+                    document.getElementById('hintText').style.display = 'none';
+                    document.getElementById('hintArrow').innerText = '▶';
                 }
             }
-            // --- 其餘情況 ---
             else {
                 errorMsg.innerText = 'password incorrect';
                 errorMsg.style.display = 'block';
                 clearInput();
             }
+        }
+
+        // 點擊「繼續 / Continue」➔ 進入最終美麗世界
+        function enterPoemWorld() {
+            document.getElementById('fake404Stage').style.display = 'none';
+            document.documentElement.classList.add('scenery-active');
+            
+            const poemContainer = document.getElementById('poemContainer');
+            poemContainer.style.display = 'flex';
+            
+            setTimeout(() => {
+                poemContainer.classList.add('show');
+                const lines = document.querySelectorAll('.poem-line');
+                lines.forEach((line, index) => {
+                    line.style.transitionDelay = `${index * 0.8}s`;
+                });
+            }, 50);
         }
 
         // 點擊「返回」
@@ -229,4 +240,5 @@
         }
     </script>
 </body>
+
 </html>
